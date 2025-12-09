@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- https://github.com/strozz1432 -->
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма обратной связи</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .hp-field {
+            display: none;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .message.success {
+            background: #dfd;
+        }
+        .message.error {
+            background: #fdd;
+        }
+        .message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Форма обратной связи</h1>
+    <p>Поделитесь вашим опытом работы с нашими продуктами</p>
+
+    <div id="message" class="message"></div>
+
+    <form id="feedbackForm" method="POST" action="/submit" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="form_load_time" value="{{ form_load_time }}">
+
+        <div class="hp-field" aria-hidden="true">
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+            <input type="text" name="email_confirm" tabindex="-1" autocomplete="off">
+            <input type="text" name="phone_number" tabindex="-1" autocomplete="off">
+        </div>
+
+        <label>Как к вам обращаться?*
+            <input type="text" name="name" required maxlength="200">
+        </label>
+
+        <label>Ваша роль*
+            <input type="text" name="role" required maxlength="200">
+        </label>
+
+        <button type="submit" id="submitBtn">Отправить</button>
+    </form>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('message');
+            btn.disabled = true;
+            btn.textContent = 'Отправка...';
+            msg.classList.remove('show', 'success', 'error');
+            
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': formData.get('csrf_token') }
+                });
+                const result = await response.json();
+                msg.textContent = result.message;
+                msg.classList.add('show', result.success ? 'success' : 'error');
+                if (result.success) this.reset();
+            } catch (error) {
+                msg.textContent = 'Ошибка. Попробуйте позже.';
+                msg.classList.add('show', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Отправить';
+            }
+        });
+    </script>
+</body>
+</html>
