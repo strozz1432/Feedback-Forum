@@ -115,7 +115,7 @@ def check_spam_patterns(text):
         r'http[s]?://', 
         r'\[url=', 
         r'<a\s+href',
-        r'viagra|cialis|casino|porn|xxx', # наверное убери это, это проверка на спам 
+        r'gambling|site|like', # наверное убери это, это проверка на спам 
         r'(.)\1{10,}',
     ]
     for pattern in spam_patterns:
@@ -212,4 +212,5 @@ def submit():
 if __name__ == '__main__':
     init_db()
     app.run(debug=False, host='127.0.0.1', port=5000)
+
 
